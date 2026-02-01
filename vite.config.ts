@@ -10,6 +10,7 @@ export default defineConfig({
         rollupOptions: {
             input: {
                 main: resolve(__dirname, 'index.html'),
+                404: resolve(__dirname, '404.html'),
                 'chart-sandbox': resolve(__dirname, 'chart-sandbox-iframe.html'),
                 'config-sandbox': resolve(__dirname, 'config-sandbox-iframe.html'),
             },

@@ -42,10 +42,11 @@ export function loadStateFromUrl(): {data: string | null; config: string | null}
 export function generateShareUrl(data: string, config: string): string {
     const compressedData = compressCode(data);
     const compressedConfig = compressCode(config);
+    const basePath = import.meta.env.BASE_URL.replace(/\/$/, '');
     const url = new URL(window.location.origin);
 
     // Use /editor/share route which will create a new session and redirect
-    url.pathname = '/editor/share';
+    url.pathname = `${basePath}/editor/share`;
     url.searchParams.set(DATA_PARAM, compressedData);
     url.searchParams.set(CONFIG_PARAM, compressedConfig);
 
