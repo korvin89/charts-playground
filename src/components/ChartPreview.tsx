@@ -137,7 +137,7 @@ export function ChartPreview({
             {/* Config sandbox iframe (hidden) */}
             <iframe
                 ref={configIframeRef}
-                src="/config-sandbox-iframe.html"
+                src={`${import.meta.env.BASE_URL}config-sandbox-iframe.html`}
                 sandbox="allow-scripts allow-same-origin"
                 style={{display: 'none'}}
                 title="Config Sandbox"
@@ -146,7 +146,7 @@ export function ChartPreview({
             {/* Chart sandbox iframe (visible) */}
             <iframe
                 ref={chartIframeRef}
-                src="/chart-sandbox-iframe.html"
+                src={`${import.meta.env.BASE_URL}chart-sandbox-iframe.html`}
                 sandbox="allow-scripts allow-same-origin"
                 style={{
                     width: '100%',
