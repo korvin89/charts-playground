@@ -1,4 +1,4 @@
-// Config Sandbox - выполняет TypeScript/JavaScript код с ограниченным API
+// Config Sandbox - executes TypeScript/JavaScript code with restricted API
 
 interface ExecuteConfigMessage {
     type: 'EXECUTE_CONFIG';
@@ -57,7 +57,7 @@ window.addEventListener('message', (event: MessageEvent<ExecuteConfigMessage>) =
     if (type !== 'EXECUTE_CONFIG') return;
 
     try {
-        // Парсим JSON data
+        // Parse JSON data
         let parsedData: any;
         try {
             parsedData = JSON.parse(data);
@@ -65,18 +65,18 @@ window.addEventListener('message', (event: MessageEvent<ExecuteConfigMessage>) =
             throw new Error(`Invalid JSON in data: ${parseError.message}`);
         }
 
-        // Создаем функцию getData, которая возвращает распарсенные данные
+        // Create getData function that returns parsed data
         const getData = () => parsedData;
 
         // Strip TypeScript type annotations to make code executable as JavaScript
         const jsCode = stripTypeAnnotations(config);
 
-        // Создаем функцию с ограниченным контекстом
-        // Передаем только разрешенные API как параметры
-        // Блокируем опасные глобальные объекты, передавая undefined для их затенения
-        // Код должен объявить переменную chartConfig с результатом
+        // Create function with restricted context
+        // Pass only allowed APIs as parameters
+        // Block dangerous global objects by passing undefined to shadow them
+        // Code must declare a chartConfig variable with the result
 
-        // Белый список разрешенных API
+        // Whitelist of allowed APIs
         const allowedParams = [
             'getData',
             'Math',
@@ -91,6 +91,7 @@ window.addEventListener('message', (event: MessageEvent<ExecuteConfigMessage>) =
             'Intl',
         ];
 
+        // Blacklist of dangerous globals to block by shadowing with undefined
         const blockedGlobals = [
             'window',
             'self',
@@ -177,6 +178,7 @@ if (typeof chartConfig === 'undefined') {
 return chartConfig;`,
         );
 
+        // Values for allowed APIs
         const allowedValues = [
             getData,
             Math,
@@ -188,12 +190,16 @@ return chartConfig;`,
             Number,
             Boolean,
             console,
+            Intl,
         ];
 
+        // undefined for all blocked globals to shadow them
         const blockedValues = blockedGlobals.map(() => undefined);
+
+        // Execute with whitelisted globals
         const chartConfig = fn(...allowedValues, ...blockedValues);
 
-        // Отправляем результат обратно
+        // Send result back to parent
         window.parent.postMessage(
             {
                 type: 'CONFIG_SUCCESS',
@@ -212,7 +218,7 @@ return chartConfig;`,
             column: undefined as number | undefined,
         };
 
-        // Извлекаем строку и колонку из stack trace
+        // Extract line and column from stack trace
         const stackMatch = err.stack?.match(/:(\d+):(\d+)/);
         if (stackMatch) {
             errorData.line = parseInt(stackMatch[1], 10);
