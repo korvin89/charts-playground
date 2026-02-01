@@ -73,8 +73,11 @@ window.addEventListener('message', (event: MessageEvent<ExecuteConfigMessage>) =
 
         // Создаем функцию с ограниченным контекстом
         // Передаем только разрешенные API как параметры
+        // Блокируем опасные глобальные объекты, передавая undefined для их затенения
         // Код должен объявить переменную chartConfig с результатом
-        const fn = new Function(
+
+        // Белый список разрешенных API
+        const allowedParams = [
             'getData',
             'Math',
             'Date',
@@ -85,16 +88,96 @@ window.addEventListener('message', (event: MessageEvent<ExecuteConfigMessage>) =
             'Number',
             'Boolean',
             'console',
-            `${jsCode}
+            'Intl',
+        ];
+
+        const blockedGlobals = [
+            'window',
+            'self',
+            'globalThis',
+            'document',
+            'fetch',
+            'XMLHttpRequest',
+            'WebSocket',
+            'EventSource',
+            'localStorage',
+            'sessionStorage',
+            'indexedDB',
+            'setTimeout',
+            'setInterval',
+            'clearTimeout',
+            'clearInterval',
+            'setImmediate',
+            'clearImmediate',
+            'requestAnimationFrame',
+            'cancelAnimationFrame',
+            'requestIdleCallback',
+            'cancelIdleCallback',
+            'Function',
+            'importScripts',
+            'Worker',
+            'SharedWorker',
+            'ServiceWorker',
+            'navigator',
+            'location',
+            'history',
+            'alert',
+            'confirm',
+            'prompt',
+            'open',
+            'close',
+            'postMessage',
+            'parent',
+            'top',
+            'frames',
+            'opener',
+            'crypto',
+            'Notification',
+            'BroadcastChannel',
+            'MessageChannel',
+            'MessagePort',
+            'queueMicrotask',
+            'Blob',
+            'File',
+            'FileReader',
+            'URL',
+            'URLSearchParams',
+            'FormData',
+            'Headers',
+            'Request',
+            'Response',
+            'AbortController',
+            'AbortSignal',
+            'TextEncoder',
+            'TextDecoder',
+            'atob',
+            'btoa',
+            'Image',
+            'Audio',
+            'Video',
+            'MediaSource',
+            'SourceBuffer',
+            'WebGL2RenderingContext',
+            'WebGLRenderingContext',
+            'OffscreenCanvas',
+            'createImageBitmap',
+            'performance',
+        ];
+
+        const allParams = [...allowedParams, ...blockedGlobals];
+
+        const fn = new Function(
+            ...allParams,
+            `"use strict";
+${jsCode}
       
-      if (typeof chartConfig === 'undefined') {
-        throw new Error('Config must declare a "chartConfig" variable with the chart configuration');
-      }
-      return chartConfig;`,
+if (typeof chartConfig === 'undefined') {
+  throw new Error('Config must declare a "chartConfig" variable with the chart configuration');
+}
+return chartConfig;`,
         );
 
-        // Выполняем с белым списком глобальных API
-        const chartConfig = fn(
+        const allowedValues = [
             getData,
             Math,
             Date,
@@ -105,7 +188,10 @@ window.addEventListener('message', (event: MessageEvent<ExecuteConfigMessage>) =
             Number,
             Boolean,
             console,
-        );
+        ];
+
+        const blockedValues = blockedGlobals.map(() => undefined);
+        const chartConfig = fn(...allowedValues, ...blockedValues);
 
         // Отправляем результат обратно
         window.parent.postMessage(
